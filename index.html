@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Wedding Gallery</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display&family=Inter&display=swap" rel="stylesheet">
+
+<style>
+body{
+ margin:0;
+ font-family:'Inter', sans-serif;
+ background:linear-gradient(135deg,#ffffff,#fdf6e3);
+ text-align:center;
+}
+
+/* ADMIN */
+#admin{
+ padding:60px 20px;
+}
+input{
+ padding:12px;
+ margin:10px;
+ width:260px;
+ border-radius:10px;
+ border:1px solid #ddd;
+}
+button{
+ padding:12px;
+ width:260px;
+ border:none;
+ border-radius:10px;
+ background:#d4af37;
+ font-weight:bold;
+ cursor:pointer;
+}
+
+/* VIEW */
+#viewer{
+ display:none;
+}
+
+header{
+ padding:80px 20px;
+}
+
+h1{
+ font-family:'Playfair Display';
+ font-size:2.8em;
+ letter-spacing:2px;
+}
+
+p{
+ color:#777;
+}
+
+.btn{
+ margin-top:30px;
+ padding:15px 30px;
+ background:#d4af37;
+ border:none;
+ border-radius:50px;
+ font-size:16px;
+ cursor:pointer;
+}
+
+.qr{
+ margin-top:40px;
+}
+</style>
+
+</head>
+
+<body>
+
+<!-- ADMIN -->
+<div id="admin">
+<h2>Create Wedding Page 💍</h2>
+
+<input id="name" placeholder="Bride & Groom Name"><br>
+<input id="event" placeholder="Wedding Day"><br>
+<input id="drive" placeholder="Paste Google Drive Link"><br>
+
+<button onclick="generate()">Generate Link</button>
+
+<h3 id="output"></h3>
+</div>
+
+<!-- VIEW -->
+<div id="viewer">
+<header>
+<h1 id="title"></h1>
+<p id="eventText"></p>
+
+<button class="btn" id="openBtn">View Gallery</button>
+
+<div class="qr">
+<img id="qrImg">
+</div>
+</header>
+</div>
+
+<script>
+const params = new URLSearchParams(window.location.search);
+const driveParam = params.get("drive");
+
+// VIEW MODE ONLY IF VALID LINK EXISTS
+if(driveParam && driveParam !== "null" && driveParam !== ""){
+ document.getElementById("admin").style.display = "none";
+ document.getElementById("viewer").style.display = "block";
+
+ const name = params.get("name");
+ const event = params.get("event");
+ const drive = driveParam;
+
+ document.getElementById("title").innerText = decodeURIComponent(name || "Wedding Gallery");
+ document.getElementById("eventText").innerText = decodeURIComponent(event || "");
+
+ document.getElementById("openBtn").onclick = ()=>{
+  window.open(decodeURIComponent(drive), "_blank");
+ };
+
+ document.getElementById("qrImg").src =
+ `https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=${drive}`;
+}
+
+// GENERATE LINK
+function generate(){
+ const name = document.getElementById("name").value.trim();
+ const event = document.getElementById("event").value.trim();
+ const drive = document.getElementById("drive").value.trim();
+
+ if(!name || !drive){
+  alert("Please enter name and drive link");
+  return;
+ }
+
+ const base = window.location.origin + window.location.pathname;
+
+ const finalLink = `${base}?name=${encodeURIComponent(name)}&event=${encodeURIComponent(event)}&drive=${encodeURIComponent(drive)}`;
+
+ document.getElementById("output").innerText = finalLink;
+}
+</script>
+
+</body>
+</html>
