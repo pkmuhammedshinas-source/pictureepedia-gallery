@@ -2,15 +2,22 @@
 <html>
 <head>
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Wedding Gallery</title>
+<title>Wedding Experience</title>
 
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600&family=Inter:wght@300;400&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display&family=Inter&display=swap" rel="stylesheet">
 
 <style>
 body{
  margin:0;
  font-family:'Inter',sans-serif;
- overflow:hidden;
+ overflow-x:hidden;
+ animation:fadePage 1.2s ease;
+}
+
+/* PAGE FADE */
+@keyframes fadePage{
+ from{opacity:0}
+ to{opacity:1}
 }
 
 /* HERO BACKGROUND */
@@ -21,48 +28,68 @@ body{
  background:url('https://images.unsplash.com/photo-1519741497674-611481863552?q=80&w=1920') center/cover no-repeat;
  filter:brightness(0.5);
  z-index:-1;
+ animation:zoomBg 20s ease-in-out infinite alternate;
 }
 
-/* CONTENT */
+@keyframes zoomBg{
+ from{transform:scale(1)}
+ to{transform:scale(1.08)}
+}
+
+/* GLASS CARD */
+.glass{
+ backdrop-filter:blur(15px);
+ background:rgba(255,255,255,0.08);
+ border:1px solid rgba(255,255,255,0.2);
+ border-radius:20px;
+ padding:30px;
+ box-shadow:0 10px 40px rgba(0,0,0,0.4);
+}
+
+/* CONTAINER */
 .container{
  height:100vh;
  display:flex;
  justify-content:center;
  align-items:center;
- flex-direction:column;
  text-align:center;
  color:white;
- animation:fadeUp 1.5s ease;
 }
 
-/* ANIMATION */
-@keyframes fadeUp{
- from{opacity:0; transform:translateY(50px);}
- to{opacity:1; transform:translateY(0);}
+/* TEXT */
+h1{
+ font-family:'Playfair Display';
+ font-size:2.8em;
+ margin:0;
 }
 
-/* ADMIN */
-#admin input{
- padding:12px;
- margin:10px;
- width:260px;
- border-radius:10px;
+p{
+ color:#ddd;
+}
+
+/* BUTTON */
+.btn{
+ margin-top:12px;
+ padding:12px 25px;
  border:none;
-}
-
-#admin button{
- padding:12px;
- width:260px;
- border:none;
- border-radius:30px;
+ border-radius:50px;
  background:linear-gradient(45deg,#d4af37,#f5e6a3);
- font-weight:bold;
  cursor:pointer;
  transition:0.3s;
 }
 
-#admin button:hover{
+.btn:hover{
  transform:scale(1.05);
+ box-shadow:0 10px 25px rgba(212,175,55,0.3);
+}
+
+/* ADMIN INPUT */
+#admin input{
+ padding:12px;
+ margin:8px;
+ width:250px;
+ border-radius:10px;
+ border:none;
 }
 
 /* VIEW */
@@ -70,48 +97,55 @@ body{
  display:none;
 }
 
-h1{
- font-family:'Playfair Display';
- font-size:3em;
- letter-spacing:3px;
- margin:0;
+/* GALLERY */
+#gallery{
+ display:none;
+ background:#fff;
+ padding:20px;
 }
 
-p{
- margin-top:10px;
- color:#ddd;
+.grid{
+ display:grid;
+ grid-template-columns:repeat(auto-fill,minmax(150px,1fr));
+ gap:10px;
 }
 
-/* BUTTONS */
-.btn{
- margin-top:20px;
- padding:15px 30px;
- border:none;
- border-radius:50px;
- background:linear-gradient(45deg,#d4af37,#f5e6a3);
- color:black;
- font-size:16px;
+.grid img{
+ width:100%;
+ border-radius:10px;
  cursor:pointer;
  transition:0.3s;
 }
 
-.btn:hover{
- transform:scale(1.1);
- box-shadow:0 10px 30px rgba(0,0,0,0.4);
+.grid img:hover{
+ transform:scale(1.05);
+}
+
+/* MODAL */
+.modal{
+ display:none;
+ position:fixed;
+ top:0;left:0;
+ width:100%;height:100%;
+ background:rgba(0,0,0,0.9);
+ justify-content:center;
+ align-items:center;
+}
+
+.modal img{
+ max-width:90%;
+ max-height:90%;
 }
 
 /* QR */
-.qr{
- margin-top:30px;
-}
 .qr img{
- width:160px;
+ width:130px;
+ margin-top:15px;
  background:white;
- padding:10px;
- border-radius:10px;
+ padding:6px;
+ border-radius:8px;
 }
 </style>
-
 </head>
 
 <body>
@@ -120,65 +154,109 @@ p{
 
 <!-- ADMIN -->
 <div id="admin" class="container">
-<h2>Create Wedding Page 💍</h2>
+<div class="glass">
+<h2>Create Wedding Experience 💍</h2>
 
 <input id="name" placeholder="Bride & Groom Name"><br>
 <input id="event" placeholder="Wedding Day"><br>
 <input id="drive" placeholder="Main Gallery Drive Link"><br>
-<input id="upload" placeholder="Guest Upload Link (optional)"><br>
+<input id="upload" placeholder="Guest Upload Link"><br>
 
-<button onclick="generate()">Generate Cinematic Link</button>
+<button class="btn" onclick="generate()">Generate Link</button>
 
 <h3 id="output"></h3>
+
+<img id="adminQR" style="margin-top:10px; width:140px;">
+</div>
 </div>
 
 <!-- VIEW -->
 <div id="viewer" class="container">
+<div class="glass">
 <h1 id="title"></h1>
 <p id="eventText"></p>
 
-<button class="btn" id="openBtn">View Gallery</button>
-<button class="btn" id="uploadBtn">Upload Your Photos</button>
+<button class="btn" onclick="enter()">View Gallery</button>
+<button class="btn" id="driveBtn">Open Drive</button>
+<button class="btn" id="uploadBtn">Upload Photos</button>
 
 <div class="qr">
 <img id="qrImg">
 </div>
 </div>
+</div>
+
+<!-- GALLERY -->
+<div id="gallery">
+<div class="grid" id="grid"></div>
+</div>
+
+<!-- MODAL -->
+<div class="modal" id="modal" onclick="this.style.display='none'">
+<img id="modalImg">
+</div>
 
 <script>
-const params = new URLSearchParams(window.location.search);
-const driveParam = params.get("drive");
+const params=new URLSearchParams(window.location.search);
+const drive=params.get("drive");
 
 // VIEW MODE
-if(driveParam && driveParam !== ""){
+if(drive){
  document.getElementById("admin").style.display="none";
  document.getElementById("viewer").style.display="flex";
 
  const name=params.get("name");
  const event=params.get("event");
- const drive=driveParam;
  const upload=params.get("upload");
 
- document.getElementById("title").innerText = decodeURIComponent(name || "Wedding Gallery");
- document.getElementById("eventText").innerText = decodeURIComponent(event || "");
+ document.getElementById("title").innerText=name||"Wedding";
+ document.getElementById("eventText").innerText=event||"";
 
- document.getElementById("openBtn").onclick = ()=>{
+ document.getElementById("driveBtn").onclick=()=>{
   window.open(decodeURIComponent(drive),"_blank");
  };
 
  if(upload){
-  document.getElementById("uploadBtn").onclick = ()=>{
+  document.getElementById("uploadBtn").onclick=()=>{
    window.open(decodeURIComponent(upload),"_blank");
   };
  } else {
   document.getElementById("uploadBtn").style.display="none";
  }
 
+ const fullLink = window.location.href;
+
  document.getElementById("qrImg").src =
- `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${drive}`;
+ `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(fullLink)}`;
 }
 
-// GENERATE LINK
+function enter(){
+ document.getElementById("viewer").style.display="none";
+ document.getElementById("gallery").style.display="block";
+}
+
+// SAMPLE IMAGES
+const images=[
+ "https://picsum.photos/400/500?1",
+ "https://picsum.photos/400/500?2",
+ "https://picsum.photos/400/500?3"
+];
+
+const grid=document.getElementById("grid");
+
+images.forEach(src=>{
+ let img=document.createElement("img");
+ img.src=src;
+
+ img.onclick=()=>{
+  document.getElementById("modal").style.display="flex";
+  document.getElementById("modalImg").src=src;
+ };
+
+ grid.appendChild(img);
+});
+
+// GENERATE
 function generate(){
  const name=document.getElementById("name").value.trim();
  const event=document.getElementById("event").value.trim();
@@ -190,7 +268,7 @@ function generate(){
   return;
  }
 
- const base=window.location.origin + window.location.pathname;
+ const base=window.location.origin+window.location.pathname;
 
  let link=`${base}?name=${encodeURIComponent(name)}&event=${encodeURIComponent(event)}&drive=${encodeURIComponent(drive)}`;
 
@@ -199,6 +277,9 @@ function generate(){
  }
 
  document.getElementById("output").innerText=link;
+
+ document.getElementById("adminQR").src =
+ `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(link)}`;
 }
 </script>
 
