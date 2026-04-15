@@ -2,205 +2,203 @@
 <html>
 <head>
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Wedding Experience</title>
+<title>Wedding Gallery</title>
 
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display&family=Inter&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600&family=Inter:wght@300;400&display=swap" rel="stylesheet">
 
 <style>
 body{
  margin:0;
  font-family:'Inter',sans-serif;
- background:#0f0f0f;
- color:white;
+ overflow:hidden;
 }
 
-/* HERO */
+/* HERO BACKGROUND */
 .hero{
+ position:fixed;
+ width:100%;
+ height:100%;
+ background:url('https://images.unsplash.com/photo-1519741497674-611481863552?q=80&w=1920') center/cover no-repeat;
+ filter:brightness(0.5);
+ z-index:-1;
+}
+
+/* CONTENT */
+.container{
  height:100vh;
  display:flex;
- flex-direction:column;
  justify-content:center;
  align-items:center;
+ flex-direction:column;
  text-align:center;
- background:radial-gradient(circle,#1a1a1a,#000);
- background-size:cover;
- background-position:center;
+ color:white;
+ animation:fadeUp 1.5s ease;
+}
+
+/* ANIMATION */
+@keyframes fadeUp{
+ from{opacity:0; transform:translateY(50px);}
+ to{opacity:1; transform:translateY(0);}
+}
+
+/* ADMIN */
+#admin input{
+ padding:12px;
+ margin:10px;
+ width:260px;
+ border-radius:10px;
+ border:none;
+}
+
+#admin button{
+ padding:12px;
+ width:260px;
+ border:none;
+ border-radius:30px;
+ background:linear-gradient(45deg,#d4af37,#f5e6a3);
+ font-weight:bold;
+ cursor:pointer;
+ transition:0.3s;
+}
+
+#admin button:hover{
+ transform:scale(1.05);
+}
+
+/* VIEW */
+#viewer{
+ display:none;
 }
 
 h1{
  font-family:'Playfair Display';
  font-size:3em;
+ letter-spacing:3px;
+ margin:0;
 }
 
-p{color:#aaa}
-
-/* INPUT */
-input{
- padding:10px;
- margin:8px;
- width:250px;
- border-radius:8px;
- border:none;
+p{
+ margin-top:10px;
+ color:#ddd;
 }
 
-/* BUTTON */
+/* BUTTONS */
 .btn{
- padding:12px 24px;
- margin:8px;
+ margin-top:20px;
+ padding:15px 30px;
  border:none;
  border-radius:50px;
  background:linear-gradient(45deg,#d4af37,#f5e6a3);
  color:black;
+ font-size:16px;
  cursor:pointer;
+ transition:0.3s;
 }
 
-/* GALLERY */
-#gallery{
- display:none;
- background:#fff;
- color:black;
- padding:20px;
-}
-
-.grid{
- display:grid;
- grid-template-columns:repeat(auto-fill,minmax(140px,1fr));
- gap:10px;
-}
-
-.grid img{
- width:100%;
- border-radius:10px;
- cursor:pointer;
+.btn:hover{
+ transform:scale(1.1);
+ box-shadow:0 10px 30px rgba(0,0,0,0.4);
 }
 
 /* QR */
+.qr{
+ margin-top:30px;
+}
 .qr img{
- width:120px;
- margin-top:10px;
+ width:160px;
  background:white;
- padding:6px;
- border-radius:8px;
+ padding:10px;
+ border-radius:10px;
 }
 </style>
+
 </head>
 
 <body>
 
+<div class="hero"></div>
+
 <!-- ADMIN -->
-<div id="admin">
+<div id="admin" class="container">
 <h2>Create Wedding Page 💍</h2>
 
-<input id="name" placeholder="Bride & Groom"><br>
-<input id="event" placeholder="Event"><br>
-<input id="drive" placeholder="Drive Link"><br>
-<input id="upload" placeholder="Upload Link"><br>
+<input id="name" placeholder="Bride & Groom Name"><br>
+<input id="event" placeholder="Wedding Day"><br>
+<input id="drive" placeholder="Main Gallery Drive Link"><br>
+<input id="upload" placeholder="Guest Upload Link (optional)"><br>
 
-<input type="file" id="bgUpload"><br>
-
-<button class="btn" onclick="generate()">Generate Link</button>
+<button onclick="generate()">Generate Cinematic Link</button>
 
 <h3 id="output"></h3>
 </div>
 
 <!-- VIEW -->
-<div id="viewer" class="hero" style="display:none;">
+<div id="viewer" class="container">
 <h1 id="title"></h1>
 <p id="eventText"></p>
 
-<button class="btn" onclick="enter()">Enter Gallery</button>
-<button class="btn" id="driveBtn">Open Drive</button>
-<button class="btn" id="uploadBtn">Upload Photos</button>
+<button class="btn" id="openBtn">View Gallery</button>
+<button class="btn" id="uploadBtn">Upload Your Photos</button>
 
 <div class="qr">
 <img id="qrImg">
 </div>
 </div>
 
-<!-- GALLERY -->
-<div id="gallery">
-<div class="grid" id="grid"></div>
-</div>
-
 <script>
-const params=new URLSearchParams(window.location.search);
-const drive=params.get("drive");
-
-// APPLY BACKGROUND FROM URL
-const bg=params.get("bg");
-if(bg){
- document.querySelector(".hero").style.backgroundImage=`url(${bg})`;
-}
+const params = new URLSearchParams(window.location.search);
+const driveParam = params.get("drive");
 
 // VIEW MODE
-if(drive){
+if(driveParam && driveParam !== ""){
  document.getElementById("admin").style.display="none";
  document.getElementById("viewer").style.display="flex";
 
  const name=params.get("name");
  const event=params.get("event");
+ const drive=driveParam;
  const upload=params.get("upload");
 
- document.getElementById("title").innerText=name;
- document.getElementById("eventText").innerText=event;
+ document.getElementById("title").innerText = decodeURIComponent(name || "Wedding Gallery");
+ document.getElementById("eventText").innerText = decodeURIComponent(event || "");
 
- document.getElementById("driveBtn").onclick=()=>{
+ document.getElementById("openBtn").onclick = ()=>{
   window.open(decodeURIComponent(drive),"_blank");
  };
 
  if(upload){
-  document.getElementById("uploadBtn").onclick=()=>{
+  document.getElementById("uploadBtn").onclick = ()=>{
    window.open(decodeURIComponent(upload),"_blank");
   };
+ } else {
+  document.getElementById("uploadBtn").style.display="none";
  }
+
+ document.getElementById("qrImg").src =
+ `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${drive}`;
 }
-
-// ENTER GALLERY
-function enter(){
- document.getElementById("viewer").style.display="none";
- document.getElementById("gallery").style.display="block";
-}
-
-// SAMPLE IMAGES
-const images=[
- "https://picsum.photos/400/500?1",
- "https://picsum.photos/400/500?2"
-];
-
-images.forEach(src=>{
- let img=document.createElement("img");
- img.src=src;
- document.getElementById("grid").appendChild(img);
-});
 
 // GENERATE LINK
 function generate(){
- const name=document.getElementById("name").value;
- const event=document.getElementById("event").value;
- const drive=document.getElementById("drive").value;
- const upload=document.getElementById("upload").value;
- const file=document.getElementById("bgUpload").files[0];
+ const name=document.getElementById("name").value.trim();
+ const event=document.getElementById("event").value.trim();
+ const drive=document.getElementById("drive").value.trim();
+ const upload=document.getElementById("upload").value.trim();
 
- let base=window.location.origin+window.location.pathname;
-
- if(file){
-  const reader=new FileReader();
-  reader.onload=function(){
-   createLink(reader.result);
-  };
-  reader.readAsDataURL(file);
- } else {
-  createLink("");
+ if(!name || !drive){
+  alert("Fill required fields");
+  return;
  }
 
- function createLink(bg){
-  let link=`${base}?name=${encodeURIComponent(name)}&event=${encodeURIComponent(event)}&drive=${encodeURIComponent(drive)}`;
+ const base=window.location.origin + window.location.pathname;
 
-  if(upload) link+=`&upload=${encodeURIComponent(upload)}`;
-  if(bg) link+=`&bg=${encodeURIComponent(bg)}`;
+ let link=`${base}?name=${encodeURIComponent(name)}&event=${encodeURIComponent(event)}&drive=${encodeURIComponent(drive)}`;
 
-  document.getElementById("output").innerText=link;
+ if(upload){
+  link+=`&upload=${encodeURIComponent(upload)}`;
  }
+
+ document.getElementById("output").innerText=link;
 }
 </script>
 
