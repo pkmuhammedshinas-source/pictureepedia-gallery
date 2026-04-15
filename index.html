@@ -55,13 +55,16 @@ p{
 }
 
 .btn{
- margin-top:30px;
+ margin-top:20px;
  padding:15px 30px;
  background:#d4af37;
  border:none;
  border-radius:50px;
  font-size:16px;
  cursor:pointer;
+ display:block;
+ margin-left:auto;
+ margin-right:auto;
 }
 
 .qr{
@@ -79,7 +82,8 @@ p{
 
 <input id="name" placeholder="Bride & Groom Name"><br>
 <input id="event" placeholder="Wedding Day"><br>
-<input id="drive" placeholder="Paste Google Drive Link"><br>
+<input id="drive" placeholder="Main Gallery Drive Link"><br>
+<input id="upload" placeholder="Guest Upload Drive Link (optional)"><br>
 
 <button onclick="generate()">Generate Link</button>
 
@@ -93,6 +97,7 @@ p{
 <p id="eventText"></p>
 
 <button class="btn" id="openBtn">View Gallery</button>
+<button class="btn" id="uploadBtn">Upload Your Photos</button>
 
 <div class="qr">
 <img id="qrImg">
@@ -102,9 +107,10 @@ p{
 
 <script>
 const params = new URLSearchParams(window.location.search);
+
 const driveParam = params.get("drive");
 
-// VIEW MODE ONLY IF VALID LINK EXISTS
+// VIEW MODE
 if(driveParam && driveParam !== "null" && driveParam !== ""){
  document.getElementById("admin").style.display = "none";
  document.getElementById("viewer").style.display = "block";
@@ -112,14 +118,26 @@ if(driveParam && driveParam !== "null" && driveParam !== ""){
  const name = params.get("name");
  const event = params.get("event");
  const drive = driveParam;
+ const upload = params.get("upload");
 
  document.getElementById("title").innerText = decodeURIComponent(name || "Wedding Gallery");
  document.getElementById("eventText").innerText = decodeURIComponent(event || "");
 
+ // MAIN GALLERY BUTTON
  document.getElementById("openBtn").onclick = ()=>{
   window.open(decodeURIComponent(drive), "_blank");
  };
 
+ // UPLOAD BUTTON
+ if(upload && upload !== ""){
+  document.getElementById("uploadBtn").onclick = ()=>{
+   window.open(decodeURIComponent(upload), "_blank");
+  };
+ } else {
+  document.getElementById("uploadBtn").style.display = "none";
+ }
+
+ // QR CODE
  document.getElementById("qrImg").src =
  `https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=${drive}`;
 }
@@ -129,15 +147,20 @@ function generate(){
  const name = document.getElementById("name").value.trim();
  const event = document.getElementById("event").value.trim();
  const drive = document.getElementById("drive").value.trim();
+ const upload = document.getElementById("upload").value.trim();
 
  if(!name || !drive){
-  alert("Please enter name and drive link");
+  alert("Please enter name and main drive link");
   return;
  }
 
  const base = window.location.origin + window.location.pathname;
 
- const finalLink = `${base}?name=${encodeURIComponent(name)}&event=${encodeURIComponent(event)}&drive=${encodeURIComponent(drive)}`;
+ let finalLink = `${base}?name=${encodeURIComponent(name)}&event=${encodeURIComponent(event)}&drive=${encodeURIComponent(drive)}`;
+
+ if(upload){
+  finalLink += `&upload=${encodeURIComponent(upload)}`;
+ }
 
  document.getElementById("output").innerText = finalLink;
 }
