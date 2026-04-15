@@ -23,18 +23,47 @@ body{
  align-items:center;
  text-align:center;
  background:radial-gradient(circle,#1a1a1a,#000);
- background-size:cover;
- background-position:center;
+ animation:fade 1s ease;
+}
+
+@keyframes fade{
+ from{opacity:0; transform:translateY(30px);}
+ to{opacity:1; transform:translateY(0);}
 }
 
 h1{
  font-family:'Playfair Display';
  font-size:3em;
+ margin:0;
 }
 
-p{color:#aaa}
+p{
+ color:#aaa;
+}
 
-/* INPUT */
+/* BUTTONS */
+.btn{
+ margin-top:12px;
+ padding:12px 24px;
+ border:none;
+ border-radius:50px;
+ background:linear-gradient(45deg,#d4af37,#f5e6a3);
+ color:black;
+ cursor:pointer;
+ transition:0.3s;
+}
+
+.btn:hover{
+ transform:scale(1.07);
+ box-shadow:0 10px 25px rgba(212,175,55,0.3);
+}
+
+/* ADMIN */
+#admin{
+ padding:40px;
+ text-align:center;
+}
+
 input{
  padding:10px;
  margin:8px;
@@ -43,15 +72,12 @@ input{
  border:none;
 }
 
-/* BUTTON */
-.btn{
- padding:12px 24px;
- margin:8px;
- border:none;
- border-radius:50px;
- background:linear-gradient(45deg,#d4af37,#f5e6a3);
- color:black;
- cursor:pointer;
+/* ACTION PANEL */
+.panel{
+ margin-top:20px;
+ display:flex;
+ flex-direction:column;
+ gap:10px;
 }
 
 /* GALLERY */
@@ -72,12 +98,33 @@ input{
  width:100%;
  border-radius:10px;
  cursor:pointer;
+ transition:0.3s;
+}
+
+.grid img:hover{
+ transform:scale(1.05);
+}
+
+/* MODAL */
+.modal{
+ display:none;
+ position:fixed;
+ top:0;left:0;
+ width:100%;height:100%;
+ background:rgba(0,0,0,0.9);
+ justify-content:center;
+ align-items:center;
+}
+
+.modal img{
+ max-width:90%;
+ max-height:90%;
 }
 
 /* QR */
 .qr img{
  width:120px;
- margin-top:10px;
+ margin-top:15px;
  background:white;
  padding:6px;
  border-radius:8px;
@@ -91,26 +138,27 @@ input{
 <div id="admin">
 <h2>Create Wedding Page 💍</h2>
 
-<input id="name" placeholder="Bride & Groom"><br>
-<input id="event" placeholder="Event"><br>
-<input id="drive" placeholder="Drive Link"><br>
-<input id="upload" placeholder="Upload Link"><br>
-
-<input type="file" id="bgUpload"><br>
+<input id="name" placeholder="Bride & Groom Name"><br>
+<input id="event" placeholder="Wedding Day"><br>
+<input id="drive" placeholder="Main Drive Link"><br>
+<input id="upload" placeholder="Guest Upload Link"><br>
 
 <button class="btn" onclick="generate()">Generate Link</button>
 
 <h3 id="output"></h3>
 </div>
 
-<!-- VIEW -->
+<!-- HERO VIEW -->
 <div id="viewer" class="hero" style="display:none;">
 <h1 id="title"></h1>
 <p id="eventText"></p>
 
+<div class="panel">
 <button class="btn" onclick="enter()">Enter Gallery</button>
-<button class="btn" id="driveBtn">Open Drive</button>
-<button class="btn" id="uploadBtn">Upload Photos</button>
+<button class="btn" id="driveBtn">Open Full Gallery</button>
+<button class="btn" id="uploadBtn">Upload Your Photos</button>
+<button class="btn" onclick="copyLink()">Copy Link</button>
+</div>
 
 <div class="qr">
 <img id="qrImg">
@@ -119,20 +167,19 @@ input{
 
 <!-- GALLERY -->
 <div id="gallery">
+<h2>Gallery</h2>
 <div class="grid" id="grid"></div>
+</div>
+
+<!-- MODAL -->
+<div class="modal" id="modal" onclick="this.style.display='none'">
+<img id="modalImg">
 </div>
 
 <script>
 const params=new URLSearchParams(window.location.search);
 const drive=params.get("drive");
 
-// APPLY BACKGROUND FROM URL
-const bg=params.get("bg");
-if(bg){
- document.querySelector(".hero").style.backgroundImage=`url(${bg})`;
-}
-
-// VIEW MODE
 if(drive){
  document.getElementById("admin").style.display="none";
  document.getElementById("viewer").style.display="flex";
@@ -141,8 +188,8 @@ if(drive){
  const event=params.get("event");
  const upload=params.get("upload");
 
- document.getElementById("title").innerText=name;
- document.getElementById("eventText").innerText=event;
+ document.getElementById("title").innerText=name||"Wedding";
+ document.getElementById("eventText").innerText=event||"";
 
  document.getElementById("driveBtn").onclick=()=>{
   window.open(decodeURIComponent(drive),"_blank");
@@ -152,10 +199,14 @@ if(drive){
   document.getElementById("uploadBtn").onclick=()=>{
    window.open(decodeURIComponent(upload),"_blank");
   };
+ } else {
+  document.getElementById("uploadBtn").style.display="none";
  }
+
+ document.getElementById("qrImg").src=
+ `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${drive}`;
 }
 
-// ENTER GALLERY
 function enter(){
  document.getElementById("viewer").style.display="none";
  document.getElementById("gallery").style.display="block";
@@ -164,43 +215,51 @@ function enter(){
 // SAMPLE IMAGES
 const images=[
  "https://picsum.photos/400/500?1",
- "https://picsum.photos/400/500?2"
+ "https://picsum.photos/400/500?2",
+ "https://picsum.photos/400/500?3"
 ];
+
+const grid=document.getElementById("grid");
 
 images.forEach(src=>{
  let img=document.createElement("img");
  img.src=src;
- document.getElementById("grid").appendChild(img);
+
+ img.onclick=()=>{
+  document.getElementById("modal").style.display="flex";
+  document.getElementById("modalImg").src=src;
+ };
+
+ grid.appendChild(img);
 });
 
-// GENERATE LINK
+// COPY LINK
+function copyLink(){
+ navigator.clipboard.writeText(window.location.href);
+ alert("Link copied!");
+}
+
+// GENERATE
 function generate(){
- const name=document.getElementById("name").value;
- const event=document.getElementById("event").value;
- const drive=document.getElementById("drive").value;
- const upload=document.getElementById("upload").value;
- const file=document.getElementById("bgUpload").files[0];
+ const name=document.getElementById("name").value.trim();
+ const event=document.getElementById("event").value.trim();
+ const drive=document.getElementById("drive").value.trim();
+ const upload=document.getElementById("upload").value.trim();
 
- let base=window.location.origin+window.location.pathname;
-
- if(file){
-  const reader=new FileReader();
-  reader.onload=function(){
-   createLink(reader.result);
-  };
-  reader.readAsDataURL(file);
- } else {
-  createLink("");
+ if(!name || !drive){
+  alert("Fill required fields");
+  return;
  }
 
- function createLink(bg){
-  let link=`${base}?name=${encodeURIComponent(name)}&event=${encodeURIComponent(event)}&drive=${encodeURIComponent(drive)}`;
+ const base=window.location.origin+window.location.pathname;
 
-  if(upload) link+=`&upload=${encodeURIComponent(upload)}`;
-  if(bg) link+=`&bg=${encodeURIComponent(bg)}`;
+ let link=`${base}?name=${encodeURIComponent(name)}&event=${encodeURIComponent(event)}&drive=${encodeURIComponent(drive)}`;
 
-  document.getElementById("output").innerText=link;
+ if(upload){
+  link+=`&upload=${encodeURIComponent(upload)}`;
  }
+
+ document.getElementById("output").innerText=link;
 }
 </script>
 
